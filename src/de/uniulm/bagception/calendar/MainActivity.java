@@ -1,5 +1,8 @@
 package de.uniulm.bagception.calendar;
 
+import java.util.ArrayList;
+
+import de.uniulm.bagception.bundlemessageprotocol.entities.CalendarEvent;
 import de.uniulm.bagception.intentservicecommunication.MyResultReceiver;
 import de.uniulm.bagception.intentservicecommunication.MyResultReceiver.Receiver;
 import de.uniulm.bagception.services.ServiceNames;
@@ -45,6 +48,7 @@ public class MainActivity extends Activity implements Receiver{
 	@Override
 	public void onReceiveResult(int resultCode, Bundle resultData) {
 		String s = resultData.getString("payload");
+		ArrayList<String> calendarEvents = resultData.getStringArrayList("calendarEvents");
 		log("answer received! " + s);
 		
 	}
