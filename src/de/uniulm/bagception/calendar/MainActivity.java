@@ -27,6 +27,8 @@ public class MainActivity extends Activity implements Receiver{
 		
 		Intent i = new Intent(serviceString);
 		i.putExtra("receiverTag", mResultreceiver);
+		int[] ids = {1};
+//		i.putExtra("calendarIDs", ids);
 		startService(i);
 		log("sending request...");
 		
