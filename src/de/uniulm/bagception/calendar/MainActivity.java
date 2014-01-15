@@ -2,10 +2,14 @@ package de.uniulm.bagception.calendar;
 
 import java.util.ArrayList;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import de.uniulm.bagception.bundlemessageprotocol.entities.CalendarEvent;
 import de.uniulm.bagception.intentservicecommunication.MyResultReceiver;
 import de.uniulm.bagception.intentservicecommunication.MyResultReceiver.Receiver;
 import de.uniulm.bagception.services.ServiceNames;
+import de.uniulm.bagception.services.attributes.Calendar;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Telephony.Mms.Part;
@@ -28,10 +32,13 @@ public class MainActivity extends Activity implements Receiver{
 
 	private MyResultReceiver mResultreceiver;
 	private ListView mCalendarListView;
-	ArrayList<String> listItems=new ArrayList<String>();
+	private ListView mCalendarEventsListView;
+	private ArrayList<String> calendarItems = new ArrayList<String>();
+	private ArrayList<String> calendarEventItems = new ArrayList<String>();
 
     //DEFINING A STRING ADAPTER WHICH WILL HANDLE THE DATA OF THE LISTVIEW
-    ArrayAdapter<String> adapter;
+    private ArrayAdapter<String> calendarAdapter;
+    private ArrayAdapter<String> calendarEventsAdapter;
  
 	
 	@Override
@@ -40,22 +47,34 @@ public class MainActivity extends Activity implements Receiver{
 		setContentView(R.layout.activity_main);
 		
 		mCalendarListView = (ListView) findViewById(R.id.CalendarListView);
-		adapter=new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listItems);
-		mCalendarListView.setAdapter(adapter);
-		mCalendarListView.setOnItemSelectedListener(new OnItemSelectedListener() {
+		calendarAdapter=new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, calendarItems);
+		mCalendarListView.setAdapter(calendarAdapter);
+		mCalendarListView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
-			public void onItemSelected(AdapterView<?> arg0, View arg1,
-					int arg2, long arg3) {
-				Log.d("itemnr:", ""+arg2);
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> arg0) {
-				// TODO Auto-generated method stub
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+					long arg3) {
+				
+				String calendarName = calendarItems.get(arg2);
+				
+				String serviceString = ServiceNames.CALENDAR_SERVICE;
+				Intent i = new Intent(serviceString);
+				i.putExtra("receiverTag", mResultreceiver);
+//				int[] calendarIDs = {1};
+				String[] calendarNames = {calendarName};
+				i.putExtra(Calendar.NUMBER_OF_EVENTS, 3);
+				// adding optional calendar ids or names
+//				i.putExtra("calendarIDs", calendarIDs);
+				i.putExtra(Calendar.CALENDAR_NAMES, calendarNames);
+				i.putExtra(Calendar.REQUEST_TYPE, Calendar.CALENDAR_EVENTS);
+				startService(i);
 				
 			}
-		});
+		});	
+		mCalendarEventsListView = (ListView) findViewById(R.id.calendarEventsListView);
+		calendarEventsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, calendarEventItems);
+		mCalendarEventsListView.setAdapter(calendarEventsAdapter);
+		
 		mResultreceiver = new MyResultReceiver(new Handler());
 		mResultreceiver.setReceiver(this);
 		
@@ -66,7 +85,7 @@ public class MainActivity extends Activity implements Receiver{
 		i.putExtra("receiverTag", mResultreceiver);
 		int[] calendarIDs = {1};
 		String[] calendarNames = {};
-		i.putExtra("numberOfEvents", 3);
+		i.putExtra("numberOfEvents", 10);
 		// adding optional calendar ids or names
 //		i.putExtra("calendarIDs", calendarIDs);
 //		i.putExtra("calendarNames", calendarNames);
@@ -90,17 +109,28 @@ public class MainActivity extends Activity implements Receiver{
 		ArrayList<String> calendarNames = new ArrayList<String>();
 		String s = resultData.getString("payload");
 		if(resultData.containsKey("calendarEvents")){
+			calendarEventItems.clear();
 			calendarEvents = resultData.getStringArrayList("calendarEvents");
 			for(String st : calendarEvents){
+				try {
+					JSONObject jO = new JSONObject(st);
+					calendarEventItems.add(jO.getString("name"));
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				log(st);
 			}
+			calendarEventsAdapter.notifyDataSetChanged();
+			
 		}
 		if(resultData.containsKey("calendarNames")){
 			calendarNames = resultData.getStringArrayList("calendarNames");
+			calendarItems.clear();
 			for(String st : calendarNames){
 				log(st);
-				listItems.add(st);
-		        adapter.notifyDataSetChanged();
+				calendarItems.add(st);
+		        calendarAdapter.notifyDataSetChanged();
 			}
 		}
 		

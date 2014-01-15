@@ -29,4 +29,24 @@
         </LinearLayout>
     </ScrollView>
 
+    <ScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="match_parent"
+        android:layout_height="186dp"
+        android:layout_y="236dp" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+
+            <ListView
+                android:id="@+id/calendarEventsListView"
+                android:layout_width="match_parent"
+                android:layout_height="160dp" >
+            </ListView>
+
+        </LinearLayout>
+    </ScrollView>
+
 </AbsoluteLayout>
