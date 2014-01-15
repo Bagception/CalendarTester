@@ -32,7 +32,7 @@
     <ScrollView
         android:id="@+id/scrollView2"
         android:layout_width="match_parent"
-        android:layout_height="186dp"
+        android:layout_height="147dp"
         android:layout_y="236dp" >
 
         <LinearLayout
@@ -48,5 +48,12 @@
 
         </LinearLayout>
     </ScrollView>
+
+    <TextView
+        android:id="@+id/infoText"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_y="400dp"
+        android:text="TextView" />
 
 </AbsoluteLayout>

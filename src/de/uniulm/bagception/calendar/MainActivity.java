@@ -1,5 +1,6 @@
 package de.uniulm.bagception.calendar;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import org.json.JSONException;
@@ -26,6 +27,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity implements Receiver{
@@ -33,12 +35,16 @@ public class MainActivity extends Activity implements Receiver{
 	private MyResultReceiver mResultreceiver;
 	private ListView mCalendarListView;
 	private ListView mCalendarEventsListView;
+	private TextView mInfoText;
 	private ArrayList<String> calendarItems = new ArrayList<String>();
 	private ArrayList<String> calendarEventItems = new ArrayList<String>();
-
+	
     //DEFINING A STRING ADAPTER WHICH WILL HANDLE THE DATA OF THE LISTVIEW
     private ArrayAdapter<String> calendarAdapter;
     private ArrayAdapter<String> calendarEventsAdapter;
+    
+    private ArrayList<String> calendarNames;
+    ArrayList<String> calendarEvents;
  
 	
 	@Override
@@ -46,6 +52,11 @@ public class MainActivity extends Activity implements Receiver{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
+		calendarNames = new ArrayList<String>();
+		calendarEvents = new ArrayList<String>();
+		
+		mInfoText = (TextView) findViewById(R.id.infoText);
+		mInfoText.setText("");
 		mCalendarListView = (ListView) findViewById(R.id.CalendarListView);
 		calendarAdapter=new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, calendarItems);
 		mCalendarListView.setAdapter(calendarAdapter);
@@ -62,7 +73,7 @@ public class MainActivity extends Activity implements Receiver{
 				i.putExtra("receiverTag", mResultreceiver);
 //				int[] calendarIDs = {1};
 				String[] calendarNames = {calendarName};
-				i.putExtra(Calendar.NUMBER_OF_EVENTS, 3);
+//				i.putExtra(Calendar.NUMBER_OF_EVENTS, 3);
 				// adding optional calendar ids or names
 //				i.putExtra("calendarIDs", calendarIDs);
 				i.putExtra(Calendar.CALENDAR_NAMES, calendarNames);
@@ -74,7 +85,24 @@ public class MainActivity extends Activity implements Receiver{
 		mCalendarEventsListView = (ListView) findViewById(R.id.calendarEventsListView);
 		calendarEventsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, calendarEventItems);
 		mCalendarEventsListView.setAdapter(calendarEventsAdapter);
-		
+		mCalendarEventsListView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+					long arg3) {
+				
+				try {
+					JSONObject obj = new JSONObject(calendarEvents.get(arg2));
+					mInfoText.setText("Start: " 	+ getDate((Long) obj.get(Calendar.EVENT_START_DATE)) + "\n" +
+									  "End: "		+ getDate((Long) obj.get(Calendar.EVENT_END_DATE))   + "\n" + 
+									  "Location: "  + obj.get(Calendar.EVENT_LOCATION));
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+//				CalendarEvent event = event.fromJSON(calendarEvents.get(arg2));
+			}
+		});
 		mResultreceiver = new MyResultReceiver(new Handler());
 		mResultreceiver.setReceiver(this);
 		
@@ -105,8 +133,8 @@ public class MainActivity extends Activity implements Receiver{
 
 	@Override
 	public void onReceiveResult(int resultCode, Bundle resultData) {
-		ArrayList<String> calendarEvents = new ArrayList<String>();
-		ArrayList<String> calendarNames = new ArrayList<String>();
+		
+		calendarNames = new ArrayList<String>();
 		String s = resultData.getString("payload");
 		if(resultData.containsKey("calendarEvents")){
 			calendarEventItems.clear();
@@ -136,6 +164,14 @@ public class MainActivity extends Activity implements Receiver{
 		
 		log("answer received!");
 		
+	}
+	
+	public String getDate(long milliSeconds) {
+	    SimpleDateFormat formatter = new SimpleDateFormat(
+	            "dd/MM/yyyy hh:mm:ss a");
+	    java.util.Calendar calendar = java.util.Calendar.getInstance();
+	    calendar.setTimeInMillis(milliSeconds);
+	    return formatter.format(calendar.getTime());
 	}
 	
 	private void log(String s){
